@@ -1,6 +1,6 @@
 | arXiv |
 |:-----:|
-|[![arXiv](https://img.shields.io/badge/arXiv-2511.xxxxx-orange.svg)](https://arXiv.org/abs/2511.xxxxx)|
+|[![arXiv](https://img.shields.io/badge/arXiv-2511.04735-orange.svg)](https://arXiv.org/abs/2511.04735)|
 
 # **NuFast-Earth**: A fast code for neutrino oscillations through the Earth from the atmosphere, the Sun, or a supernova
 
@@ -17,4 +17,4 @@ If one is interested in long-baseline calculations through approximately constan
 We strongly encourage a careful examination of the constants used (G<sub>F</sub>, etc.) when comparing to existing codes.
 
 ### Usage
-If you use this code, please cite the associated paper [arXiv:2511.xxxxx](https://arxiv.org/abs/2511.xxxxx) by Peter Denton and Stephen Parke. Please also let us know if you find any bugs or further optimizations or if you run your own speed tests.
+If you use this code, please cite the associated paper [arXiv:2511.04735](https://arxiv.org/abs/2511.04735) by Peter Denton and Stephen Parke. Please also let us know if you find any bugs or further optimizations or if you run your own speed tests.
