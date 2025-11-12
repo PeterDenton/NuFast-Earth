@@ -6,6 +6,24 @@
 
 #define sq(x) ((x)*(x))
 
+
+// AGM formula for the complete elliptic integral to eliminate
+// the dependency on std::comp_ellint_1 from cmath which is not
+// available on macOS (yet)
+static double comp_ellint_1(double k) {
+    double a = 1.0;
+    double b = std::sqrt(1.0 - k*k);
+    double c;
+
+    while (std::abs(a - b) > 1e-15) {
+        c = (a + b) * 0.5;
+        b = std::sqrt(a * b);
+        a = c;
+    }
+    return M_PI / (2.0 * a);
+}
+
+
 // table II in hep-ph/9702343
 // eta is the nadir angle in radians
 // latitude is the experiments latitude in radians
@@ -71,6 +89,5 @@ double Solar_Weight(double eta, double latitude)
 		}
 	} // third column
 
-	return 2 * sin(eta) * std::comp_ellint_1(num / den) / (sq(M_PI) * den);
+	return 2 * sin(eta) * comp_ellint_1(num / den) / (sq(M_PI) * den);
 }
-
