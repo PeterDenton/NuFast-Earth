@@ -45,7 +45,7 @@ void Probability_Engine::Precalc()
 }
 
 // rhoYeE=rho*Ye*E
-// does not depend on theta23 or delta
+// int the tilde basis: does not depend on theta23 or delta
 // sign(rhoYeE) indicates nu/nubar
 Eigen Probability_Engine::Calculate_Eigen(double rhoYeE)
 {
@@ -61,7 +61,7 @@ Eigen Probability_Engine::Calculate_Eigen(double rhoYeE)
 		eigen.lambda.vec[1] = Dmsq21;
 		eigen.lambda.vec[2] = Dmsq31;
 
-		// eigens:
+		// eigenvectors:
 		eigen.Ve2sq = s12sq * c13sq;
 		eigen.Ve3sq = s13sq;
 		eigen.Vm2sq = c12sq;
@@ -262,16 +262,7 @@ Matrix3r Probability_Engine::Inner_Amplitude_to_Probability_Solar(Matrix3c amp)
 {
 	Matrix3r prob;
 
-	// precalc some stuff
-	double s13, c13, s12, c12, s23, c23;
 	std::complex<double> eid;
-
-	s13 = sqrt(s13sq);
-	c13 = sqrt(1 - s13sq);
-	s12 = sqrt(s12sq);
-	c12 = sqrt(1 - s12sq);
-	s23 = sqrt(s23sq);
-	c23 = sqrt(1 - s23sq);
 	eid = exp(std::complex<double>(0, delta));
 
 	// fill in the probability matrix
