@@ -338,19 +338,16 @@ void Probability_Engine::Calculate_Internal_Amplitudes()
 			if (earth_density->constant_shells)
 			{
 				amp.Identity();
-				count = 0;
 				for (unsigned int k = 0; k < mean_densities2s[j].size(); k++)
 				{
 					eigen = eigens_constant[i][int(mean_densities2s[j][k].second)];
 					amp = amp * Probability_Amplitude_1Shell(mean_densities2s[j][k].first / Es[i] * neutrino_mode_sign, eigen);
-					count++;
 				} // k, mean_densities2s
 				amp = amp.AAT(); // double the trajectory
 				for (unsigned int k = 0; k < mean_densities1s[j].size(); k++)
 				{
 					eigen = eigens_constant[i][int(mean_densities1s[j][k].second)];
 					amp = amp * Probability_Amplitude_1Shell(mean_densities1s[j][k].first / Es[i] * neutrino_mode_sign, eigen);
-					count++;
 				}
 				internal_amplitudes[i].emplace_back(amp);
 			} // constant shells
