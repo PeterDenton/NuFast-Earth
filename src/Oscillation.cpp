@@ -45,7 +45,7 @@ void Probability_Engine::Precalc()
 }
 
 // rhoYeE=rho*Ye*E
-// int the tilde basis: does not depend on theta23 or delta
+// in the tilde basis: does not depend on theta23 or delta
 // sign(rhoYeE) indicates nu/nubar
 Eigen Probability_Engine::Calculate_Eigen(double rhoYeE)
 {
