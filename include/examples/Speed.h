@@ -4,5 +4,6 @@
 void Geometry_Test_Earth_Density_Model();
 void Eigen_Speed();
 void Atmospheric_Speed();
+void E_vs_cosz_Speed();
 
 #endif

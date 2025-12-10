@@ -173,3 +173,71 @@ void Atmospheric_Speed()
 	} // quick/slow
 	fclose(data);
 }
+
+void E_vs_cosz_Speed(int nE, int ncosz)
+{
+	Probability_Engine probability_engine;
+	probability_engine.Set_Oscillation_Parameters(0.307, 0.02195, 0.561, 177 * M_PI / 180, 7.49e-5, +2.534e-3, true); // nu-fit 6
+
+	// Create Earth model instance
+	PREM_NDiscontinuityLayer earth_density(2, 10, 10, 5);
+	// Set Earth details
+	probability_engine.Set_Earth(2, &earth_density);
+	probability_engine.Set_Production_Height(10);
+
+	std::vector<double> Es, coszs;
+	double Emin, Emax, Estep, coszmin, coszmax, coszstep;
+
+	Emin = 2;
+	Emax = 40;
+
+	coszmin = -1;
+	coszmax = +0.1;
+
+	Estep = (Emax - Emin) / nE;
+	coszstep = (coszmax - coszmin) / ncosz;
+
+	Es.reserve(nE);
+	coszs.reserve(ncosz);
+	for (int i = 0; i < nE; i++)
+		Es.emplace_back(Emin + i * Estep);
+	for (int i = 0; i < ncosz; i++)
+		coszs.emplace_back(coszmin + i * coszstep);
+	probability_engine.Set_Spectra(Es, coszs);
+
+	std::vector<std::vector<Matrix3r>> probs;
+	probs = probability_engine.Get_Probabilities();
+
+	int n_1, n_2;
+	double speed, speed_sum, speedsq_sum, speed_mean, speed_std;
+
+	n_1 = 1e2;
+	n_2 = 1e2;
+
+	speed_sum = 0;
+	speedsq_sum = 0;
+
+	for (int i = 0; i < n_1; i++)
+	{
+		std::chrono::high_resolution_clock::time_point start_time = std::chrono::high_resolution_clock::now();
+		for (int j = 0; j < n_2; j++)
+		{
+			probability_engine.Set_Dmsq31(2.5e-3 + i * 0.1e-3 / n_2);
+			probs = probability_engine.Get_Probabilities();
+		} // j, n_2
+		std::chrono::high_resolution_clock::time_point end_time = std::chrono::high_resolution_clock::now();
+		speed = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count() / n_2 * 1e9;
+		speed_sum += speed;
+		speedsq_sum += sq(speed);
+	} // i, n_1
+	speed_mean = speed_sum / n_1 / nE / ncosz;
+	speed_std = sqrt(speedsq_sum / n_1 - sq(speed_sum / n_1)) / nE / ncosz;
+
+	printf("nE = %d, ncosz = %d, time = %g +- %g\n", nE, ncosz, speed_mean, speed_std);
+}
+
+void E_vs_cosz_Speed()
+{
+	E_vs_cosz_Speed(50, 100);
+	E_vs_cosz_Speed(100, 50);
+}
