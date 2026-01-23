@@ -37,17 +37,18 @@ int main()
 
 	// Validation
 //	Eigenvalues_Validation();
-//	LBL_Appearance_Validation();
+	LBL_Appearance_Validation();
 //	Solar_Day_Validation();
 //	Solar_Day_Night_Validation();
 //	Solar_Weight_Validation();
 //	Precision();
+//	Detector_Depth();
 
 	// Speed
 //	Geometry_Test_Earth_Density_Model();
 //	Eigen_Speed();
 //	Atmospheric_Speed();
-	E_vs_cosz_Speed();
+//	E_vs_cosz_Speed();
 
 	return 0;
 }

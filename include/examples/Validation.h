@@ -7,5 +7,6 @@ void Solar_Day_Validation();
 void Solar_Day_Night_Validation();
 void Solar_Weight_Validation();
 void Precision();
+void Detector_Depth();
 
 #endif

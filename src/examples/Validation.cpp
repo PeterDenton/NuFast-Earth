@@ -70,7 +70,6 @@ void LBL_Appearance_Validation(bool normal_ordering, bool lower_octant)
 	Constant earth_density(3 * 0.5);
 
 	// Set Earth details
-	// First number >=0 is production height, second number >=0 is detector depth
 	probability_engine.Set_Earth(0, &earth_density);
 
 	// Initialize the energy and cosz arrays
@@ -147,7 +146,6 @@ void Solar_Day_Validation()
 	PREM_NDiscontinuityLayer earth_density(2, 10, 10, 5);
 
 	// Set Earth details
-	// First number >=0 is production height
 	probability_engine.Set_Earth(2, &earth_density);
 
 	probability_engine.Set_rhoYe_Sun(100 * (2. / 3));
@@ -417,4 +415,97 @@ void Precision()
 	fprintf(data, "%d %d %g %g %g\n", eigenvalue_precision, n_layer, mean_diff, std_diff, max_diff);
 
 	fclose(data);
+}
+// We test the impact of the detector depth
+void Detector_Depth(int alpha, int beta, bool normal_ordering, bool neutrino_mode, double detector_depth)
+{
+	double mean_diff, std_diff, max_diff;
+	int mo_sign;
+	std::vector<std::vector<Matrix3r>> probs_surface, probs_depth;
+
+	// Initialize probability engine
+	Probability_Engine probability_engine;
+
+	// Set initial oscillation parameters
+	mo_sign = normal_ordering ? +1 : -1;
+	probability_engine.Set_Oscillation_Parameters(0.307, 0.02195, 0.561, 177 * M_PI / 180, 7.49e-5, mo_sign * 2.534e-3, neutrino_mode); // nu-fit 6
+
+	// Create the energy and cosz vectors
+	std::vector<double> Es, coszs;
+	double Emin, Emax, Estep, coszmin, coszmax, coszstep;
+	int n;
+
+	n = 2e3;
+
+	Emin = 2;
+	Emax = 40;
+
+	coszmin = -1.0;
+	coszmax = +0.1;
+
+	Estep = (Emax - Emin) / n;
+	coszstep = (coszmax - coszmin) / n;
+
+	Es.reserve(n + 1);
+	coszs.reserve(n + 1);
+	for (int i = 0; i <= n; i++)
+	{
+		Es.emplace_back(Emin + i * Estep);
+		coszs.emplace_back(coszmin + i * coszstep);
+	} // i, n
+
+	probability_engine.Set_Spectra(Es, coszs);
+
+	// Create Earth model instance
+	PREM_NDiscontinuityLayer earth_density(2, 10, 10, 5);
+
+	// Set Earth details
+	// Detector depth
+	probability_engine.Set_Production_Height(10);
+	probability_engine.Set_Earth(0, &earth_density);
+	probs_surface = probability_engine.Get_Probabilities();
+	detector_depth = 2;
+	probability_engine.Set_Earth(detector_depth, &earth_density);
+	probs_depth = probability_engine.Get_Probabilities();
+
+	Diff(probs_surface, probs_depth, alpha, beta, alpha, beta, &mean_diff, &std_diff, &max_diff);
+	printf("mean = %g, std = %g, max = %g\n", mean_diff, std_diff, max_diff);
+
+	std::string fname = "data/Detector_Depth_";
+	fname += normal_ordering ? "NO" : "IO";
+	fname += "_";
+	fname += neutrino_mode ? "nu" : "nubar";
+	fname += "_";
+	fname += (beta == 0) ? "app" : "dis";
+	fname += ".txt";
+	FILE *data = fopen(fname.c_str(), "w");
+	fprintf(data, "%g\n", detector_depth);
+	for (int i = 0; i <= n; i++)
+		fprintf(data, "%g ", Es[i]);
+	fprintf(data, "\n");
+	for (int i = 0; i <= n; i++)
+		fprintf(data, "%g ", coszs[i]);
+	fprintf(data, "\n");
+
+	for (int i = 0; i <= n; i++)
+	{
+		for (int j = 0; j <= n; j++)
+			fprintf(data, "%g ", probs_surface[i][j].arr[alpha][beta] - probs_depth[i][j].arr[alpha][beta]);
+		fprintf(data, "\n");
+	} // i, n, E
+
+	fclose(data);
+}
+void Detector_Depth()
+{
+	double detector_depth = 2;
+	int alpha = 1;
+	for (int no = 0; no < 2; no++)
+	{
+		for (int nm = 0; nm < 2; nm++)
+		{
+			for (int beta = 0; beta < 2; beta++)
+				Detector_Depth(alpha, beta, no == 0, nm == 0, detector_depth);
+		}
+	}
 }
