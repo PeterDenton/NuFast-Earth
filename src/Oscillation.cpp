@@ -218,7 +218,7 @@ Matrix3r Probability_Engine::Inner_Amplitude_to_Probability(Matrix3c amp, double
 	{
 		sinzsq = 1 - sq(cosz);
 		L = Distance_Between_Layers(earth_density->r_E + production_height, earth_density->r_E, sinzsq, detector_depth, earth_density);
-		amp = amp * Probability_Amplitude_1Shell(L / E, eigen_vac);
+		amp = amp * Probability_Amplitude_1Shell(neutrino_mode_sign * L / E, eigen_vac);
 	}
 
 	epid = exp(std::complex<double>(0, delta)); // e^(+i*delta)

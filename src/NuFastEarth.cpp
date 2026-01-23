@@ -245,6 +245,9 @@ void Probability_Engine::Calculate_Trajectories()
 	// Initialize vectors for the trajectories
 	std::vector<std::pair<double,double>> mean_densities1, mean_densities2; // initialize the distances and densities for one cosz path
 
+	mean_densities1s.clear();
+	mean_densities2s.clear();
+
 	mean_densities1s.reserve(coszs.size());
 	mean_densities2s.reserve(coszs.size());
 
@@ -279,9 +282,7 @@ void Probability_Engine::Calculate_Eigens()
 		{
 			eigens_constant.emplace_back();
 			for (int j = 0; j < earth_density->n_discontinuities; j++)
-			{
 				eigens_constant[i].emplace_back(Calculate_Eigen(earth_density->rhoYe(earth_density->discontinuities[j] - 1e-8) * Es[i] * neutrino_mode_sign));
-			}
 		} // i, E
 	} // constant shells
 	else
