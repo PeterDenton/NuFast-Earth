@@ -509,3 +509,104 @@ void Detector_Depth()
 		}
 	}
 }
+// We test the impact of the atmosphere density
+void Atmosphere_Density(int alpha, int beta, bool normal_ordering, bool neutrino_mode, double rhoYe_atm)
+{
+	double mean_diff, std_diff, max_diff;
+	int mo_sign;
+	std::vector<std::vector<Matrix3r>> probs_vacuum, probs_atmosphere;
+
+	// Initialize probability engine
+	Probability_Engine probability_engine;
+
+	// Set initial oscillation parameters
+	mo_sign = normal_ordering ? +1 : -1;
+	probability_engine.Set_Oscillation_Parameters(0.307, 0.02195, 0.561, 177 * M_PI / 180, 7.49e-5, mo_sign * 2.534e-3, neutrino_mode); // nu-fit 6
+
+	// Create the energy and cosz vectors
+	std::vector<double> Es, coszs;
+	double Emin, Emax, Estep, coszmin, coszmax, coszstep;
+	int n;
+
+	n = 2e3;
+
+	Emin = 2;
+	Emax = 40;
+
+	coszmin = -1.0;
+	coszmax = +0.1;
+
+	Estep = (Emax - Emin) / n;
+	coszstep = (coszmax - coszmin) / n;
+
+	Es.reserve(n + 1);
+	coszs.reserve(n + 1);
+	for (int i = 0; i <= n; i++)
+	{
+		Es.emplace_back(Emin + i * Estep);
+		coszs.emplace_back(coszmin + i * coszstep);
+	} // i, n
+
+	probability_engine.Set_Spectra(Es, coszs);
+
+	// Create Earth model instance
+	double production_height = 10;
+	double detector_depth = 2;
+	int n_inner_core_discontinuities = 2;
+	int n_outer_core_discontinuities = 10;
+	int n_inner_mantle_discontinuities = 10;
+	int n_outer_mantle_discontinuities = 5;
+	Atmosphere_NDL earth_density_vacuum(n_inner_core_discontinuities, n_outer_core_discontinuities, n_inner_mantle_discontinuities, n_outer_mantle_discontinuities, production_height, 0);
+	Atmosphere_NDL earth_density_atmosphere(n_inner_core_discontinuities, n_outer_core_discontinuities, n_inner_mantle_discontinuities, n_outer_mantle_discontinuities, production_height, rhoYe_atm);
+
+	// ** Set Earth details **
+	// Vacuum
+	probability_engine.Set_Production_Height(0);
+	probability_engine.Set_Earth(production_height + detector_depth, &earth_density_vacuum);
+	probs_vacuum = probability_engine.Get_Probabilities();
+
+	// Atmosphere
+	probability_engine.Set_Earth(production_height + detector_depth, &earth_density_atmosphere);
+	probs_atmosphere = probability_engine.Get_Probabilities();
+
+	Diff(probs_vacuum, probs_atmosphere, alpha, beta, alpha, beta, &mean_diff, &std_diff, &max_diff);
+	printf("mean = %g, std = %g, max = %g\n", mean_diff, std_diff, max_diff);
+
+	std::string fname = "data/Atmosphere_Density_";
+	fname += normal_ordering ? "NO" : "IO";
+	fname += "_";
+	fname += neutrino_mode ? "nu" : "nubar";
+	fname += "_";
+	fname += (beta == 0) ? "app" : "dis";
+	fname += ".txt";
+	FILE *data = fopen(fname.c_str(), "w");
+	fprintf(data, "%g\n", rhoYe_atm);
+	for (int i = 0; i <= n; i++)
+		fprintf(data, "%g ", Es[i]);
+	fprintf(data, "\n");
+	for (int i = 0; i <= n; i++)
+		fprintf(data, "%g ", coszs[i]);
+	fprintf(data, "\n");
+
+	for (int i = 0; i <= n; i++)
+	{
+		for (int j = 0; j <= n; j++)
+			fprintf(data, "%g ", probs_vacuum[i][j].arr[alpha][beta] - probs_atmosphere[i][j].arr[alpha][beta]);
+		fprintf(data, "\n");
+	} // i, n, E
+
+	fclose(data);
+}
+void Atmosphere_Density()
+{
+	double rhoYe_atm = 1e-3 * 0.5;
+	int alpha = 1;
+	for (int no = 0; no < 2; no++)
+	{
+		for (int nm = 0; nm < 2; nm++)
+		{
+			for (int beta = 0; beta < 2; beta++)
+				Atmosphere_Density(alpha, beta, no == 0, nm == 0, rhoYe_atm);
+		}
+	}
+}

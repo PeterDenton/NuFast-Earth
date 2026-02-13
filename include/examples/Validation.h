@@ -8,5 +8,6 @@ void Solar_Day_Night_Validation();
 void Solar_Weight_Validation();
 void Precision();
 void Detector_Depth();
+void Atmosphere_Density();
 
 #endif

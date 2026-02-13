@@ -5,7 +5,6 @@
 #include "Earth.h"
 #include "Matrix.h"
 #include "NuFastEarth.h"
-#include "Geometry.h"
 
 void Density_Profiles()
 {
@@ -16,16 +15,18 @@ void Density_Profiles()
 	PREM_Four earth_density_four;
 	PREM_Prob3 earth_density_prob3;
 
-	double r, r_step;
+	double r, rmin, rmax, rstep;
 	int n = 1e4;
 
-	r_step = 6371. / n;
+	rmin = 0;
+	rmax = 6371;
+	rstep = (rmax - rmin) / n;
 
 	FILE *data = fopen("data/Density_Profiles.txt", "w");
 	fprintf(data, "%d\n", n_layer);
 	for (int i = 0; i <= n; i++)
 	{
-		r = i * r_step;
+		r = rmin + i * rstep;
 		fprintf(data, "%g ", r);
 		fprintf(data, "%g ", earth_density_full.rhoYe(r));
 		fprintf(data, "%g ", earth_density_ndiscontinuitylayer.rhoYe(r));

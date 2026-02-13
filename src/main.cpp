@@ -11,7 +11,7 @@
 
 int main()
 {
-
+/*
 	// Atmospheric neutrino minimal example
 	Probability_Engine probability_engine;
 	probability_engine.Set_Oscillation_Parameters(0.307, 0.02195, 0.561, 177 * M_PI / 180, 7.49e-5, 2.534e-3, true);
@@ -29,7 +29,7 @@ int main()
 			printf("%8.2g %6.2g %12.6g %12.6g %12.6g\n", energies[i], coszs[j], probabilities[i][j].arr[0][0], probabilities[i][j].arr[1][0], probabilities[i][j].arr[1][1]);
 		} // j, coszs
 	} // i, energies
-
+*/
 	// Figures
 //	Density_Profiles();
 //	Oscillogram();
@@ -43,6 +43,7 @@ int main()
 //	Solar_Weight_Validation();
 //	Precision();
 //	Detector_Depth();
+	Atmosphere_Density();
 
 	// Speed
 //	Geometry_Test_Earth_Density_Model();

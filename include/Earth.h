@@ -61,5 +61,18 @@ class Constant : public Earth_Density
 	private:
 		double rhoYe_;
 };
+// production_height in NuFastEarth object should be zero
+class Atmosphere_NDL : public Earth_Density
+{
+	public:
+		Atmosphere_NDL(int n_inner_core_discontinuities, int n_outer_core_discontinuities, int n_inner_mantle_discontinuities, int n_outer_mantle_discontinuities, double production_height, double rhoYe_atm);
+		Atmosphere_NDL(int n_discontinuities, double production_height, double rhoYe_atm);
+		double rhoYe(double r);
+	private:
+		int n_inner_core_discontinuities, n_outer_core_discontinuities, n_inner_mantle_discontinuities, n_outer_mantle_discontinuities;
+		double production_height, rhoYe_atm;
+		double layers[5];
+		std::vector<double> rhoYes;
+};
 
 #endif

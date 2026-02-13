@@ -31,7 +31,7 @@ double PREM_Full_Ye(double r)
 	if (r < 3480.0)	return 0.466;
 	else			return 0.494;
 }
-
+///////////////////////////////////////////////////////////////////////////////////////////
 PREM_NDiscontinuityLayer::PREM_NDiscontinuityLayer(int n_inner_core_discontinuities_, int n_outer_core_discontinuities_, int n_inner_mantle_discontinuities_, int n_outer_mantle_discontinuities_)
 {
 	n_inner_core_discontinuities = n_inner_core_discontinuities_;
@@ -215,5 +215,85 @@ double Constant::rhoYe(double r)
 
     if (r <= 6371.) return rhoYe_;
     return 0;
+}
+///////////////////////////////////////////////////////////////////////////////////////////
+// production_height in NuFastEarth object should be zero
+Atmosphere_NDL::Atmosphere_NDL(int n_inner_core_discontinuities_, int n_outer_core_discontinuities_, int n_inner_mantle_discontinuities_, int n_outer_mantle_discontinuities_, double production_height_, double rhoYe_atm_)
+{
+	n_inner_core_discontinuities = n_inner_core_discontinuities_;
+	n_outer_core_discontinuities = n_outer_core_discontinuities_;
+	n_inner_mantle_discontinuities = n_inner_mantle_discontinuities_;
+	n_outer_mantle_discontinuities = n_outer_mantle_discontinuities_;
+	production_height = production_height_;
+	rhoYe_atm = rhoYe_atm_;
+
+	r_E = 6371 + production_height;
+
+	n_discontinuities = n_inner_core_discontinuities + n_outer_core_discontinuities + n_inner_mantle_discontinuities + n_outer_mantle_discontinuities + 1;
+	discontinuities.reserve(n_discontinuities);
+	rhoYes.reserve(n_discontinuities);
+
+	layers[0] = 1221.5;
+	layers[1] = 3480;
+	layers[2] = 5701;
+	layers[3] = 6371;
+	layers[4] = 6371 + production_height;
+
+	double r;
+	int count;
+
+	count = 0;
+	// inner core
+	for (int i = 0; i < n_inner_core_discontinuities; i++)
+	{
+		discontinuities[count] = (i + 1) * layers[0] / n_inner_core_discontinuities;
+		r = (i + 0.5) * layers[0] / n_inner_core_discontinuities;
+		rhoYes[count] = PREM_Full_Ye(r) * PREM_Full_rho(r);
+		count++;
+	} // i, n_inner_core_discontinuities, r
+	// outer core
+	for (int i = 0; i < n_outer_core_discontinuities; i++)
+	{
+		discontinuities[count] = layers[0] + (i + 1) * (layers[1] - layers[0]) / n_outer_core_discontinuities;
+		r = layers[0] + (i + 0.5) * (layers[1] - layers[0]) / n_outer_core_discontinuities;
+		rhoYes[count] = PREM_Full_Ye(r) * PREM_Full_rho(r);
+		count++;
+	} // i, n_outer_core_discontinuities, r
+	// inner mantle
+	for (int i = 0; i < n_inner_mantle_discontinuities; i++)
+	{
+		discontinuities[count] = layers[1] + (i + 1) * (layers[2] - layers[1]) / n_inner_mantle_discontinuities;
+		r = layers[1] + (i + 0.5) * (layers[2] - layers[1]) / n_inner_mantle_discontinuities;
+		rhoYes[count] = PREM_Full_Ye(r) * PREM_Full_rho(r);
+		count++;
+	} // i, n_inner_mantle_discontinuities, r
+	// outer mantle
+	for (int i = 0; i < n_outer_mantle_discontinuities; i++)
+	{
+		discontinuities[count] = layers[2] + (i + 1) * (layers[3] - layers[2]) / n_outer_mantle_discontinuities;
+		r = layers[2] + (i + 0.5) * (layers[3] - layers[2]) / n_outer_mantle_discontinuities;
+		rhoYes[count] = PREM_Full_Ye(r) * PREM_Full_rho(r);
+		count++;
+	} // i, n_outer_mantle_discontinuities, r
+	
+	discontinuities[count] = layers[4];
+	rhoYes[count] = rhoYe_atm; // atmosphere density is about 1e-3 g/cm^3, and the electron fraction of both nitrogen and oxygen is 0.5
+
+	constant_shells = true;
+}
+Atmosphere_NDL::Atmosphere_NDL(int n_discontinuities_, double production_height_, double rhoYe_atm_) : Atmosphere_NDL(n_discontinuities_, n_discontinuities_, n_discontinuities_, n_discontinuities_, production_height_, rhoYe_atm_) {}
+double Atmosphere_NDL::rhoYe(double r)
+{
+	assert(r >= 0);
+	if (r > layers[4]) assert(false);
+	if (r > layers[3])
+		return rhoYes[n_inner_core_discontinuities + n_outer_core_discontinuities + n_inner_mantle_discontinuities + n_outer_mantle_discontinuities];
+	if (r > layers[2])
+		return rhoYes[(int)floor((r - layers[2]) / (layers[3] - layers[2]) * n_outer_mantle_discontinuities) + n_inner_core_discontinuities + n_outer_core_discontinuities + n_inner_mantle_discontinuities];
+	if (r > layers[1])
+		return rhoYes[(int)floor((r - layers[1]) / (layers[2] - layers[1]) * n_inner_mantle_discontinuities) + n_inner_core_discontinuities + n_outer_core_discontinuities];
+	if (r > layers[0])
+		return rhoYes[(int)floor((r - layers[0]) / (layers[1] - layers[0]) * n_inner_mantle_discontinuities) + n_inner_core_discontinuities];
+	return rhoYes[(int)floor(r / layers[0] * n_inner_core_discontinuities)];
 }
 
