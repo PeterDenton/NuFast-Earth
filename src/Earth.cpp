@@ -97,7 +97,7 @@ double PREM_NDiscontinuityLayer::rhoYe(double r)
 	if (r > layers[1])
 		return rhoYes[(int)floor((r - layers[1]) / (layers[2] - layers[1]) * n_inner_mantle_discontinuities) + n_inner_core_discontinuities + n_outer_core_discontinuities];
 	if (r > layers[0])
-		return rhoYes[(int)floor((r - layers[0]) / (layers[1] - layers[0]) * n_inner_mantle_discontinuities) + n_inner_core_discontinuities];
+		return rhoYes[(int)floor((r - layers[0]) / (layers[1] - layers[0]) * n_outer_core_discontinuities) + n_inner_core_discontinuities];
 	return rhoYes[(int)floor(r / layers[0] * n_inner_core_discontinuities)];
 }
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -293,7 +293,7 @@ double Atmosphere_NDL::rhoYe(double r)
 	if (r > layers[1])
 		return rhoYes[(int)floor((r - layers[1]) / (layers[2] - layers[1]) * n_inner_mantle_discontinuities) + n_inner_core_discontinuities + n_outer_core_discontinuities];
 	if (r > layers[0])
-		return rhoYes[(int)floor((r - layers[0]) / (layers[1] - layers[0]) * n_inner_mantle_discontinuities) + n_inner_core_discontinuities];
+		return rhoYes[(int)floor((r - layers[0]) / (layers[1] - layers[0]) * n_outer_core_discontinuities) + n_inner_core_discontinuities];
 	return rhoYes[(int)floor(r / layers[0] * n_inner_core_discontinuities)];
 }
 
