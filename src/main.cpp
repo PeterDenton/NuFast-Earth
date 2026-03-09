@@ -11,7 +11,6 @@
 
 int main()
 {
-
 	// Atmospheric neutrino minimal example
 	Probability_Engine probability_engine;
 	probability_engine.Set_Oscillation_Parameters(0.307, 0.02195, 0.561, 177 * M_PI / 180, 7.49e-5, 2.534e-3, true);

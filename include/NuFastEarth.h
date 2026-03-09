@@ -33,7 +33,9 @@ class Probability_Engine
 		void Set_Production_Height(double production_height); // km, optional, fast
 		void Set_rhoYe_Sun(double rhoYe_Sun); // g/cm^3, fast
 		double Get_rhoYe_Sun(); // g/cc
-		void Set_Spectra(std::vector<double> Es, std::vector<double> coszs); // GeV
+		void Set_Spectra(std::vector<double> Es, std::vector<double> coszs); // GeV, for earth mode only
+		void Set_E_Spectra(std::vector<double> Es); // GeV, for single trajectory mode only
+		void Set_Trajectory(std::vector<std::pair<double,double>> trajectory); // L (km), rhoYe (g/cc), for single trajectory mode only
 
 		void Set_Eigenvalue_Precision(int eigenvalue_precision); // not necessary to call as this is set by default
 
@@ -67,12 +69,15 @@ class Probability_Engine
 		double production_height, detector_depth;
 		int neutrino_mode_sign; // +1 for neutrinos, -1 for anti-neutrinos
 		Earth_Density *earth_density;
-		std::vector<double> Es, coszs;
+		std::vector<double> Es, coszs; // GeV
+		std::vector<std::pair<double,double>> trajectory; // L (km), rhoYe (g/cc), for single trajectory mode only
 		double rhoYe_Sun; // density in the Sun, just one point
 		int eigenvalue_precision;
 
 		// keep track of whether or not things are set up
-		bool oscillation_parameters_set, earth_set, spectra_set, rhoYe_Sun_set;
+		bool oscillation_parameters_set, earth_set, spectra_set, E_spectra_set, trajectory_set, rhoYe_Sun_set;
+		// keep track of trajectory options
+		bool earth_mode, single_trajectory_mode;
 		// keep track of what has been calculated
 		bool trajectories_calculated, oscillation_precalced, eigens_calculated, internal_amplitudes_calculated, eigen_vac_calculated, probabilities_calculated;
 		// ------------ Solar ------------ //

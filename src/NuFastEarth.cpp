@@ -11,6 +11,11 @@ Probability_Engine::Probability_Engine()
 	oscillation_parameters_set = false;
 	earth_set = false;
 	spectra_set = false;
+	E_spectra_set = false;
+	trajectory_set = false;
+
+	earth_mode = false;
+	single_trajectory_mode = false;
 
 	trajectories_calculated = false;
 	oscillation_precalced = false;
@@ -177,6 +182,8 @@ int Probability_Engine::Get_neutrino_mode_sign()
 }
 void Probability_Engine::Set_Earth(double detector_depth_, Earth_Density *earth_density_)
 {
+	assert(not single_trajectory_mode);
+
 	trajectories_calculated = false;
 	eigens_calculated = false;
 	internal_amplitudes_calculated = false;
@@ -187,9 +194,12 @@ void Probability_Engine::Set_Earth(double detector_depth_, Earth_Density *earth_
 	earth_density = earth_density_;
 
 	earth_set = true;
+	earth_mode = true;
 }
 void Probability_Engine::Set_Production_Height(double production_height_)
 {
+	assert(not single_trajectory_mode);
+
 	probabilities_calculated = false;
 	solar_night_in_earth_calculated = false;
 
@@ -197,6 +207,8 @@ void Probability_Engine::Set_Production_Height(double production_height_)
 }
 void Probability_Engine::Set_Spectra(std::vector<double> Es_, std::vector<double> coszs_)
 {
+	assert(not single_trajectory_mode);
+
 	trajectories_calculated = false;
 	eigens_calculated = false;
 	internal_amplitudes_calculated = false;
@@ -212,6 +224,47 @@ void Probability_Engine::Set_Spectra(std::vector<double> Es_, std::vector<double
 	coszs = coszs_;
 
 	spectra_set = true;
+}
+void Probability_Engine::Set_E_Spectra(std::vector<double> Es_)
+{
+	assert(not earth_mode);
+
+	eigens_calculated = false;
+	internal_amplitudes_calculated = false;
+	probabilities_calculated = false;
+	Vsolar_calculated = false;
+	solar_night_in_earth_calculated = false;
+
+	// check that every element is positive
+	for (unsigned int i = 0; i < Es_.size(); i++)
+		assert(Es_[i] > 0);
+
+	Es = Es_;
+
+	E_spectra_set = true;
+	single_trajectory_mode = true;
+}
+void Probability_Engine::Set_Trajectory(std::vector<std::pair<double,double>> trajectory_)
+{
+	assert(not earth_mode);
+
+	eigens_calculated = false;
+	internal_amplitudes_calculated = false;
+	probabilities_calculated = false;
+	Vsolar_calculated = false;
+	solar_night_in_earth_calculated = false;
+
+	// check the elements
+	for (unsigned int i = 0; i < trajectory_.size(); i++)
+	{
+		assert(trajectory_[i].first > 0); // length, km
+		assert(trajectory_[i].second >= 0); // rhoYe, g/cc
+	} // i, trajectory
+
+	trajectory = trajectory_;
+
+	trajectory_set = true;
+	single_trajectory_mode = true;
 }
 void Probability_Engine::Set_rhoYe_Sun(double rhoYe_Sun_) // g/cc
 {
@@ -241,6 +294,7 @@ void Probability_Engine::Set_Eigenvalue_Precision(int eigenvalue_precision_)
 void Probability_Engine::Calculate_Trajectories()
 {
 	assert(spectra_set);
+	assert(earth_mode);
 
 	// Initialize vectors for the trajectories
 	std::vector<std::pair<double,double>> mean_densities1, mean_densities2; // initialize the distances and densities for one cosz path
@@ -265,63 +319,99 @@ void Probability_Engine::Calculate_Trajectories()
 void Probability_Engine::Calculate_Eigens()
 {
 	assert(oscillation_parameters_set);
-	assert(earth_set);
-	assert(spectra_set);
 
-	if (not trajectories_calculated) Calculate_Trajectories();
+	if (earth_mode)
+	{
+		assert(earth_set);
+		assert(spectra_set);
+		if (not trajectories_calculated) Calculate_Trajectories();
+	}
+	else if (single_trajectory_mode)
+	{
+		assert(E_spectra_set);
+		assert(trajectory_set);
+	}
+	else
+		assert(false);
+
 	if (not oscillation_precalced) Precalc();
 
 	eigens_constant.clear();
 	eigens_varying.clear();
 
 	double rhoYe;
-	if (earth_density->constant_shells)
+
+	if (earth_mode)
+	{
+		if (earth_density->constant_shells)
+		{
+			eigens_constant.reserve(Es.size());
+			for (unsigned int i = 0; i < Es.size(); i++)
+			{
+				eigens_constant.emplace_back();
+				for (int j = 0; j < earth_density->n_discontinuities; j++)
+					eigens_constant[i].emplace_back(Calculate_Eigen(earth_density->rhoYe(earth_density->discontinuities[j] - 1e-8) * Es[i] * neutrino_mode_sign));
+			} // i, E
+		} // constant shells
+		else
+		{
+			for (unsigned int i = 0; i < Es.size(); i++)
+			{
+				eigens_varying.emplace_back();
+				for (unsigned int j = 0; j < coszs.size(); j++)
+				{
+					eigens_varying[i].emplace_back();
+					for (unsigned int k = 0; k < mean_densities2s[j].size(); k++)
+					{
+						rhoYe = mean_densities2s[j][k].second;
+						eigens_varying[i][j].emplace_back(Calculate_Eigen(rhoYe * Es[i] * neutrino_mode_sign));
+					} // k, trajectory2
+					for (unsigned int k = 0; k < mean_densities1s[j].size(); k++) // loop over layers
+					{
+						rhoYe = mean_densities1s[j][k].second;
+						eigens_varying[i][j].emplace_back(Calculate_Eigen(rhoYe * Es[i] * neutrino_mode_sign));
+					} // k, trajectory1
+				} // j, coszs
+			} // i, E
+		} // varying shells
+	} // earth_mode
+	else if (single_trajectory_mode)
 	{
 		eigens_constant.reserve(Es.size());
 		for (unsigned int i = 0; i < Es.size(); i++)
 		{
 			eigens_constant.emplace_back();
-			for (int j = 0; j < earth_density->n_discontinuities; j++)
-				eigens_constant[i].emplace_back(Calculate_Eigen(earth_density->rhoYe(earth_density->discontinuities[j] - 1e-8) * Es[i] * neutrino_mode_sign));
+			for (unsigned int j = 0; j < trajectory.size(); j++)
+				eigens_constant[i].emplace_back(Calculate_Eigen(trajectory[j].second * Es[i] * neutrino_mode_sign));
 		} // i, E
-	} // constant shells
-	else
-	{
-		for (unsigned int i = 0; i < Es.size(); i++)
-		{
-			eigens_varying.emplace_back();
-			for (unsigned int j = 0; j < coszs.size(); j++)
-			{
-				eigens_varying[i].emplace_back();
-				for (unsigned int k = 0; k < mean_densities2s[j].size(); k++)
-				{
-					rhoYe = mean_densities2s[j][k].second;
-					eigens_varying[i][j].emplace_back(Calculate_Eigen(rhoYe * Es[i] * neutrino_mode_sign));
-				} // k, trajectory2
-				for (unsigned int k = 0; k < mean_densities1s[j].size(); k++) // loop over layers
-				{
-					rhoYe = mean_densities1s[j][k].second;
-					eigens_varying[i][j].emplace_back(Calculate_Eigen(rhoYe * Es[i] * neutrino_mode_sign));
-				} // k, trajectory1
-			} // j, coszs
-		} // i, E
-	} // varying shells
+	}
 
 	eigens_calculated = true;
 }
 std::vector<std::vector<Eigen>> Probability_Engine::Get_Eigens_Constant()
 {
 	assert(eigens_calculated);
-	assert(earth_density->constant_shells);
+	if (earth_mode)
+		assert(earth_density->constant_shells);
 	return eigens_constant;
 }
 void Probability_Engine::Calculate_Internal_Amplitudes()
 {
 	assert(oscillation_parameters_set);
-	assert(earth_set);
-	assert(spectra_set);
+	if (earth_mode)
+	{
+		assert(earth_set);
+		assert(spectra_set);
+		if (not trajectories_calculated) Calculate_Trajectories();
+	}
+	else if (single_trajectory_mode)
+	{
+		assert(trajectory_set);
+		assert(E_spectra_set);
+	}
+	else
+		assert(false);
 
-	if (not trajectories_calculated) Calculate_Trajectories();
 	if (not oscillation_precalced) Precalc();
 	if (not eigens_calculated) Calculate_Eigens();
 
@@ -331,54 +421,71 @@ void Probability_Engine::Calculate_Internal_Amplitudes()
 
 	internal_amplitudes.clear();
 
-	for (unsigned int i = 0; i < Es.size(); i++)
+	if (earth_mode)
 	{
-		internal_amplitudes.emplace_back();
-		for (unsigned int j = 0; j < coszs.size(); j++)
+		for (unsigned int i = 0; i < Es.size(); i++)
 		{
-			if (earth_density->constant_shells)
+			internal_amplitudes.emplace_back();
+			for (unsigned int j = 0; j < coszs.size(); j++)
 			{
-				amp.Identity();
-				for (unsigned int k = 0; k < mean_densities2s[j].size(); k++)
+				if (earth_density->constant_shells)
 				{
-					eigen = eigens_constant[i][int(mean_densities2s[j][k].second)];
-					amp = amp * Probability_Amplitude_1Shell(mean_densities2s[j][k].first / Es[i] * neutrino_mode_sign, eigen);
-				} // k, mean_densities2s
-				// We have now calculated A_O
-				amp = amp.AAT(); // double the trajectory
-				// We have now calculated A_O*A_I
-				for (int k = mean_densities1s[j].size() - 1; k >=0; k--)
+					amp.Identity();
+					for (unsigned int k = 0; k < mean_densities2s[j].size(); k++)
+					{
+						eigen = eigens_constant[i][int(mean_densities2s[j][k].second)];
+						amp = amp * Probability_Amplitude_1Shell(mean_densities2s[j][k].first / Es[i] * neutrino_mode_sign, eigen);
+					} // k, mean_densities2s
+					// We have now calculated A_O
+					amp = amp.AAT(); // double the trajectory
+					// We have now calculated A_O*A_I
+					for (int k = mean_densities1s[j].size() - 1; k >=0; k--)
+					{
+						eigen = eigens_constant[i][int(mean_densities1s[j][k].second)];
+						amp = amp * Probability_Amplitude_1Shell(mean_densities1s[j][k].first / Es[i] * neutrino_mode_sign, eigen);
+					} // k, mean_densities1s
+					// We have now calculated A_O*A_I*A_S
+					internal_amplitudes[i].emplace_back(amp);
+				} // constant shells
+				else
 				{
-					eigen = eigens_constant[i][int(mean_densities1s[j][k].second)];
-					amp = amp * Probability_Amplitude_1Shell(mean_densities1s[j][k].first / Es[i] * neutrino_mode_sign, eigen);
-				} // k, mean_densities1s
-				// We have now calculated A_O*A_I*A_S
-				internal_amplitudes[i].emplace_back(amp);
-			} // constant shells
-			else
+					amp.Identity();
+					count = 0;
+					for (unsigned int k = 0; k < mean_densities2s[j].size(); k++)
+					{
+						eigen = eigens_varying[i][j][count];
+						amp = amp * Probability_Amplitude_1Shell(mean_densities2s[j][k].first / Es[i] * neutrino_mode_sign, eigen);
+						count++;
+					} // k, mean_densities2s
+					// We have now calculated A_O
+					amp = amp.AAT(); // double the trajectory
+					// We have now calculated A_O*A_I
+					for (int k = mean_densities1s[j].size() - 1; k >= 0; k--)
+					{
+						eigen = eigens_varying[i][j][count];
+						amp = amp * Probability_Amplitude_1Shell(mean_densities1s[j][k].first / Es[i] * neutrino_mode_sign, eigen);
+						count++;
+					}
+					// We have now calculated A_O*A_I*A_S
+					internal_amplitudes[i].emplace_back(amp);
+				} // varying shells
+			} // j, cosz
+		} // i, E
+	} // earth_mode
+	else if (single_trajectory_mode)
+	{
+		for (unsigned int i = 0; i < Es.size(); i++)
+		{
+			internal_amplitudes.emplace_back();
+			amp.Identity();
+			for (unsigned int j = 0; j < trajectory.size(); j++)
 			{
-				amp.Identity();
-				count = 0;
-				for (unsigned int k = 0; k < mean_densities2s[j].size(); k++)
-				{
-					eigen = eigens_varying[i][j][count];
-					amp = amp * Probability_Amplitude_1Shell(mean_densities2s[j][k].first / Es[i] * neutrino_mode_sign, eigen);
-					count++;
-				} // k, mean_densities2s
-				// We have now calculated A_O
-				amp = amp.AAT(); // double the trajectory
-				// We have now calculated A_O*A_I
-				for (int k = mean_densities1s[j].size() - 1; k >= 0; k--)
-				{
-					eigen = eigens_varying[i][j][count];
-					amp = amp * Probability_Amplitude_1Shell(mean_densities1s[j][k].first / Es[i] * neutrino_mode_sign, eigen);
-					count++;
-				}
-				// We have now calculated A_O*A_I*A_S
-				internal_amplitudes[i].emplace_back(amp);
-			} // varying shells
-		} // j, cosz
-	} // i, E
+				eigen = eigens_constant[i][j];
+				amp = Probability_Amplitude_1Shell(trajectory[j].first / Es[i] * neutrino_mode_sign, eigen) * amp;
+			} // j, trajectory
+			internal_amplitudes[i].emplace_back(amp);
+		} // i, E
+	} // single trajectory mode
 
 	internal_amplitudes_calculated = true;
 }
@@ -393,10 +500,23 @@ void Probability_Engine::Calculate_Eigen_Vac()
 void Probability_Engine::Calculate_Probabilities()
 {
 	assert(oscillation_parameters_set);
-	assert(earth_set);
-	assert(spectra_set);
+	int n_cosz;
+	if (earth_mode)
+	{
+		assert(earth_set);
+		assert(spectra_set);
+		if (not trajectories_calculated) Calculate_Trajectories();
+		n_cosz = coszs.size();
+	}
+	else if (single_trajectory_mode)
+	{
+		assert(E_spectra_set);
+		assert(trajectory_set);
+		n_cosz = 1;
+	}
+	else
+		assert(false);
 
-	if (not trajectories_calculated) Calculate_Trajectories();
 	if (not eigens_calculated) Calculate_Eigens();
 	if (not internal_amplitudes_calculated) Calculate_Internal_Amplitudes();
 	if (not eigen_vac_calculated) Calculate_Eigen_Vac();
@@ -407,11 +527,14 @@ void Probability_Engine::Calculate_Probabilities()
 	for (unsigned int i = 0; i < Es.size(); i++)
 	{
 		probabilities.emplace_back();
-		probabilities[i].reserve(coszs.size());
-		for (unsigned int j = 0; j < coszs.size(); j++)
+		probabilities[i].reserve(n_cosz);
+		for (int j = 0; j < n_cosz; j++)
 		{
 			probabilities[i].emplace_back();
-			probabilities[i][j] = Inner_Amplitude_to_Probability(internal_amplitudes[i][j], coszs[j], Es[i]);
+			if (earth_mode)
+				probabilities[i][j] = Inner_Amplitude_to_Probability(internal_amplitudes[i][j], coszs[j], Es[i]);
+			else if (single_trajectory_mode)
+				probabilities[i][j] = Inner_Amplitude_to_Probability(internal_amplitudes[i][j], 0, Es[i]);
 		} // j, coszs
 	} // i, Es
 
@@ -498,8 +621,18 @@ void Probability_Engine::Calculate_Solar_Day_In_Earth()
 std::vector<std::vector<Matrix3r>> Probability_Engine::Get_Probabilities()
 {
 	assert(oscillation_parameters_set);
-	assert(earth_set);
-	assert(spectra_set);
+	if (earth_mode)
+	{
+		assert(earth_set);
+		assert(spectra_set);
+	}
+	else if (single_trajectory_mode)
+	{
+		assert(E_spectra_set);
+		assert(trajectory_set);
+	}
+	else
+		assert(false);
 
 	if (not probabilities_calculated) Calculate_Probabilities();
 	return probabilities;

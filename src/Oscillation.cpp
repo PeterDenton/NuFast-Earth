@@ -214,6 +214,9 @@ Matrix3r Probability_Engine::Inner_Amplitude_to_Probability(Matrix3c amp, double
 	double sinzsq, L, xtmp, ytmp;
 	std::complex<double> epid, emid, Ate, Aet, AmtpAtm;
 
+	if (single_trajectory_mode)
+		assert (production_height == 0);
+
 	if (production_height > 0)
 	{
 		sinzsq = 1 - sq(cosz);
