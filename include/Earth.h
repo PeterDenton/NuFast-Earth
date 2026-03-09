@@ -6,7 +6,7 @@
 class Earth_Density
 {
 	public:
-		virtual ~Earth_Density() {};
+		virtual ~Earth_Density() {}
 		int n_discontinuities; // number of discontinuities
 		std::vector<double> discontinuities; // the actual discontinuities
 		double r_E = 6371; // Earth's radius in km

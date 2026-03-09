@@ -121,7 +121,7 @@ PREM_NUniformLayer::PREM_NUniformLayer(int n_discontinuities_)
 double PREM_NUniformLayer::rhoYe(double r)
 {
 	assert(r >= 0);
-	if (r > 6371.) return 0;
+	if (r >= 6371.) return 0;
 	return rhoYes[(int)floor(r / r_E * n_discontinuities)];
 }
 ///////////////////////////////////////////////////////////////////////////////////////////
