@@ -29,7 +29,7 @@ class Probability_Engine
 		double Get_Dmsq31();
 		int Get_neutrino_mode_sign();
 
-		void Set_Earth(double detector_depth, Earth_Density *earth_density); // km
+		void Set_Earth(double detector_depth, Earth_Density *earth_density); // km, for earth mode only
 		void Set_Production_Height(double production_height); // km, optional, fast
 		void Set_rhoYe_Sun(double rhoYe_Sun); // g/cm^3, fast
 		double Get_rhoYe_Sun(); // g/cc

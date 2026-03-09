@@ -224,6 +224,7 @@ void Probability_Engine::Set_Spectra(std::vector<double> Es_, std::vector<double
 	coszs = coszs_;
 
 	spectra_set = true;
+	earth_mode = true;
 }
 void Probability_Engine::Set_E_Spectra(std::vector<double> Es_)
 {

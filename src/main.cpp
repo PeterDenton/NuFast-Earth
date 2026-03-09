@@ -28,7 +28,7 @@ int main()
 			printf("%8.2g %6.2g %12.6g %12.6g %12.6g\n", energies[i], coszs[j], probabilities[i][j].arr[0][0], probabilities[i][j].arr[1][0], probabilities[i][j].arr[1][1]);
 		} // j, coszs
 	} // i, energies
-
+	
 	// Figures
 //	Density_Profiles();
 //	Oscillogram();
