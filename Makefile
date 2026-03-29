@@ -11,7 +11,7 @@ all: $(Sources) $(Executables)
 
 $(Executables): $(AllObjects)
 	@mkdir -p data obj obj/examples
-	$(CXX) $(Objects) $(addprefix obj/,$@.o) $(GSLFlags) -o $@
+	$(CXX) $(Objects) $(addprefix obj/,$@.o) -o $@
 
 obj/%.o: src/%.cpp
 	@mkdir -p $(@D)

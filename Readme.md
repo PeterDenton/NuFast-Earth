@@ -8,7 +8,7 @@
 **NuFast-Earth** is designed to calculate all nine neutrino oscillation probabilities in matter through the Earth for atmospheric, solar, and supernova neutrinos sources. The code is designed to be very fast and it also automatically reuses repeated calculations when possible.
 
 ### General usage
-For details on the usage, please read the included `Guide.pdf` file as well as the associated paper on the arXiv.
+For details on the usage, please read the included `User_Guide.pdf` file as well as the associated paper on the arXiv.
 
 Not all files are necessary for use. In particular, the `examples` subdirectories containing `Figures.cpp`, `Speed.cpp`, and `Validation.cpp` and their associated header files are not necessary.
 
