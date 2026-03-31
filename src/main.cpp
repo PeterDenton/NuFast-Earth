@@ -9,6 +9,8 @@
 #include "examples/Figures.h"
 #include "examples/Validation.h"
 
+using namespace NuFast;
+
 int main()
 {
 	// Atmospheric neutrino minimal example

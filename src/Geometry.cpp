@@ -7,6 +7,8 @@
 
 #define sq(x) ((x)*(x))
 
+namespace NuFast {
+
 double Distance_Between_Layers(double r_1, double r_2, double sinzsq, double detector_depth, Earth_Density *earth_density)
 {
 	assert(r_1 > r_2);
@@ -111,3 +113,5 @@ double L2cosz(double L)
 
 	return -L / (2 * 6371.);
 }
+
+} // namespace NuFast

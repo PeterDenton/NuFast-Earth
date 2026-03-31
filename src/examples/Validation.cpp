@@ -6,6 +6,8 @@
 #include "Geometry.h"
 #include "Solar.h"
 
+using namespace NuFast;
+
 void Eigenvalues_Validation()
 {
 	Probability_Engine probability_engine;

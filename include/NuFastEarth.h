@@ -6,6 +6,8 @@
 #include "Earth.h"
 #include "Matrix.h"
 
+namespace NuFast {
+
 class Probability_Engine
 {
 	public:
@@ -111,5 +113,7 @@ class Probability_Engine
 		Matrix3r solar_day_in_earth; // this is just Usq
 		std::vector<std::vector<Matrix3r>> solar_night_in_earth; // first index is energy, second is cosz. mass to flavor basis
 };
+
+} // namespace NuFast
 
 #endif

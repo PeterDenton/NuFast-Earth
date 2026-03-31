@@ -8,6 +8,8 @@
 #define sq(x) ((x)*(x))
 #define cube(x) ((x)*(x)*(x))
 
+namespace NuFast {
+
 constexpr double YerhoE2a = 0.0001526493231029146;
 constexpr double eVsqkm_to_GeV_over2 = 1.e-9 / 1.97327e-7 * 1.e3 / 2.; // = 2.5338...
 
@@ -310,3 +312,5 @@ Matrix3r Probability_Engine::Calculate_Solar_Probability(double rhoYeE)
 
 	return prob;
 }
+
+} // namespace NuFast

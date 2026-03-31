@@ -6,6 +6,8 @@
 #include "Matrix.h"
 #include "NuFastEarth.h"
 
+using namespace NuFast;
+
 void Density_Profiles()
 {
 	PREM_Full earth_density_full;

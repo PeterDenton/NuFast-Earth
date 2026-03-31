@@ -7,6 +7,8 @@
 #define sq(x) ((x)*(x))
 #define cube(x) ((x)*(x)*(x))
 
+namespace NuFast {
+
 double PREM_Full_rho(double r)
 {
 	double x;
@@ -297,3 +299,4 @@ double Atmosphere_NDL::rhoYe(double r)
 	return rhoYes[(int)floor(r / layers[0] * n_inner_core_discontinuities)];
 }
 
+} // namespace NuFast

@@ -5,6 +5,8 @@
 
 #define sq(x) ((x)*(x))
 
+namespace NuFast {
+
 class Matrix3r
 {
 	public:
@@ -148,5 +150,7 @@ struct Eigen
 	Vector3r lambda;
 	double Ve2sq, Ve3sq, Vm2sq, Vm3sq, Vt2sq, Vt3sq, Ve3Vm3, Ve3Vt3, Vm3Vt3, Ve2Vm2, Ve2Vt2, Vm2Vt2;
 };
+
+} // namespace NuFast
 
 #endif

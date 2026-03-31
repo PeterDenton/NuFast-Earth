@@ -3,6 +3,8 @@
 
 #include "Solar.h"
 
+namespace NuFast {
+
 #define sq(x) ((x)*(x))
 
 // AGM formula for the complete elliptic integral to eliminate
@@ -93,3 +95,5 @@ double Solar_Weight(double eta, double latitude)
 
 	return 2 * sin(eta) * comp_ellint_1(num / den) / (sq(M_PI) * den);
 }
+
+} // namespace NuFast

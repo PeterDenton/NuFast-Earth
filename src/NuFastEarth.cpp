@@ -6,6 +6,8 @@
 #include "Geometry.h"
 #include "Matrix.h"
 
+namespace NuFast {
+
 Probability_Engine::Probability_Engine()
 {
 	oscillation_parameters_set = false;
@@ -688,3 +690,5 @@ std::vector<std::vector<Matrix3r>> Probability_Engine::Get_Solar_Night_Probabili
 
 	return probabilities_solar_night;
 }
+
+} // namespace NuFast

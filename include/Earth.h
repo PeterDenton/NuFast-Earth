@@ -3,6 +3,8 @@
 
 #include <vector>
 
+namespace NuFast {
+
 class Earth_Density
 {
 	public:
@@ -74,5 +76,7 @@ class Atmosphere_NDL : public Earth_Density
 		double layers[5];
 		std::vector<double> rhoYes;
 };
+
+} // namespace NuFast
 
 #endif

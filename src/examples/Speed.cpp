@@ -13,6 +13,8 @@
 
 std::string optimization_level = "3"; // change this here as the Makefile is changed
 
+using namespace NuFast;
+
 void Geometry_Test_Earth_Density_Model(Earth_Density *ed, int n_1, int n_2)
 {
 	std::vector<std::pair<double,double>> mean_densities1, mean_densities2; // initialize the distances and densities
