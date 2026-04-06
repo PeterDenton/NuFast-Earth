@@ -65,6 +65,9 @@ class Probability_Engine
 		std::vector<Matrix3r> Get_Solar_Day_Probabilities();
 		std::vector<std::vector<Matrix3r>> Get_Solar_Night_Probabilities(); // first dimension is energy, second is cosz. production height should be zero.
 
+		// ------------ Print, I/O ------------ //
+		void Print_Status();
+
 	private:
 		// input parameters
 		double s12sq, s13sq, s23sq, delta, Dmsq21, Dmsq31;

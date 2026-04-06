@@ -691,4 +691,128 @@ std::vector<std::vector<Matrix3r>> Probability_Engine::Get_Solar_Night_Probabili
 	return probabilities_solar_night;
 }
 
+// ------------ Print, I/O ------------ //
+void Probability_Engine::Print_Status()
+{
+	printf("\nProbability engine current status:\n");
+
+	printf("\tProduction height = %g km\n", production_height);
+	printf("\tEigenvalue precision = %d (0: good, 1: great, ..., negative=exact)\n", eigenvalue_precision);
+
+	if (oscillation_parameters_set)
+	{
+		printf("\tOscillation parameters have been set.\n");
+		printf("\t\ts12sq = %g\n", s12sq);
+		printf("\t\ts13sq = %g\n", s13sq);
+		printf("\t\ts23sq = %g\n", s23sq);
+		printf("\t\tdelta = %g rad\n", delta);
+		printf("\t\tDmsq21 = %g eV^2\n", Dmsq21);
+		printf("\t\tDmsq31 = %g eV^2\n", Dmsq31);
+	} // oscillation parameters set
+	else
+		printf("\tOscillation parameters have not been set.\n");
+
+	if (earth_mode)
+	{
+		printf("\tEarth mode selected.\n");
+
+		if (earth_set)
+		{
+			printf("\tEarth model has been set.\n");
+			printf("\t\tDetector depth = %g km\n", detector_depth);
+		} // earth set
+		else
+			printf("\tEarth model has not been set.\n");
+
+		if (spectra_set)
+		{
+			printf("\tSpectra have been set.\n");
+			printf("\t\tNumber of energy grid points = %lu\n", Es.size());
+			printf("\t\tNumber of cosz grid points = %lu\n", coszs.size());
+
+		} // spectra set
+		else
+			printf("\tSpectra have not been set.\n");
+
+	} // earth mode
+	else if (single_trajectory_mode)
+	{
+		printf("\tSingle trajectory mode selected.\n");
+
+		if (trajectory_set)
+		{
+			printf("\tTrajectory has been set.\n");
+			printf("\t\tTrajectory has %lu steps.\n", trajectory.size());
+		} // trajectory set
+		else
+			printf("\tTrajectory has not been set.\n");
+
+		if (E_spectra_set)
+		{
+			printf("\tEnergy spectrum has been set.\n");
+			printf("\t\tNumber of energy grid points = %lu\n", Es.size());
+		} // E spectra set
+		else
+			printf("\tEnergy spectrum has not been set.\n");
+	} // single trajectory mode
+	else
+		printf("\tNo trajectory mode selected.\n");
+
+	if (rhoYe_Sun_set)
+		printf("\tDensity in the Sun has been set.\n");
+	else
+		printf("\tDensity in the Sun has not been set.\n");
+
+	if (earth_mode)
+	{
+		if (trajectories_calculated)
+			printf("\tTrajectories have been calculated.\n");
+		else
+			printf("\tTrajectories have not been calculated.\n");
+	}
+
+	if (oscillation_precalced)
+		printf("\tOscillation parameter precalculations have been calculated.\n");
+	else
+		printf("\tOscillation parameter precalculations have not been calculated.\n");
+
+	if (eigens_calculated)
+		printf("\tEigenvalue and eigenvector information has been calculated.\n");
+	else
+		printf("\tEigenvalue and eigenvector information has not been calculated.\n");
+
+	if (eigen_vac_calculated)
+		printf("\tVacuum eigenvalue and eigenvector information has been calculated.\n");
+	else
+		printf("\tVacuum eigenvalue and eigenvector information has not been calculated.\n");
+
+	if (internal_amplitudes_calculated)
+		printf("\tInternal amplitudes have been calculated.\n");
+	else
+		printf("\tInternal amplitudes have not been calculated.\n");
+
+	if (probabilities_calculated)
+		printf("\tProbabilities have been calculated.\n");
+	else
+		printf("\tProbabilities have not been calculated.\n");
+	
+	// ------------ Solar ------------ //
+	if (Vsolar_calculated)
+		printf("\tSolar eigenvector information has been calculated.\n");
+	else
+		printf("\tSolar eigenvector information has not been calculated.\n");
+
+	if (solar_day_in_earth_calculated)
+		printf("\tSolar day time detection information has been calculated.\n");
+	else
+		printf("\tSolar day time detection information has not been calculated.\n");
+
+	if (solar_night_in_earth_calculated)
+		printf("\tSolar night time inner amplitude has been calculated.\n");
+	else
+		printf("\tSolar night time inner amplitude has not been calculated.\n");
+
+	printf("\n");
+}
+
 } // namespace NuFast
