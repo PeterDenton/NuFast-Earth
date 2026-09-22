@@ -11,7 +11,7 @@
 namespace NuFast {
 
 constexpr double YerhoE2a = 0.0001526493231029146;
-constexpr double eVsqkm_to_GeV_over2 = 1.e-9 / 1.97327e-7 * 1.e3 / 2.; // = 2.5338...
+constexpr double eVsqkm_to_GeV_over2 = 1.e-9 / 1.973269804e-7 * 1.e3 / 2.; // = 2.5339...
 
 void Probability_Engine::Precalc()
 {
