@@ -16,6 +16,19 @@ class Earth_Density
 		virtual double rhoYe(double r) = 0; // density (g/cc) of the Earth at radius r in km
 }; // class Earth_Density
 
+class PREM_EQW_DiscontinuityLayer : public Earth_Density
+{
+	public:
+		PREM_EQW_DiscontinuityLayer(double layer_width_);
+		double rhoYe(double r);
+	private: 
+		double layer_width;
+		std::vector<int> n_discontinuities_list;
+		double layers[10]; 
+		int additional_layers; 
+		std::vector<double> rhoYes;
+};
+
 class PREM_NDiscontinuityLayer : public Earth_Density
 {
 	public:
