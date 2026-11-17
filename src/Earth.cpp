@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cmath>
 #include <vector>
+#include <numeric>
 
 #include "Earth.h"
 
@@ -33,6 +34,83 @@ double PREM_Full_Ye(double r)
 	if (r < 3480.0)	return 0.466;
 	else			return 0.494;
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+PREM_EQW_DiscontinuityLayer::PREM_EQW_DiscontinuityLayer(double layer_width_)
+{
+	layer_width = layer_width_;
+	layers[0] = 1221.5;
+	layers[1] = 3480;
+	layers[2] = 5701;
+	layers[3] = 5771.0; 
+	layers[4] = 5971.0;
+	layers[5] = 6151.0;
+	layers[6] = 6346.6;
+	layers[7] = 6356.0;
+	layers[8] = 6368.0;
+	layers[9] = 6371.0;
+
+	n_discontinuities_list.resize(10);
+
+	n_discontinuities_list[0] = std::ceil(layers[0]/layer_width);
+	for (int i = 1; i < 10; i++){
+		n_discontinuities_list[i] = std::ceil((layers[i]-layers[i-1])/layer_width); 
+	}
+	
+	n_discontinuities = std::accumulate(n_discontinuities_list.begin(), n_discontinuities_list.end(), 0);
+
+	discontinuities.reserve(n_discontinuities);
+	rhoYes.reserve(n_discontinuities);
+
+	double r; 
+	int count; 
+
+	count = 0; 
+	
+	for (int i = 0; i < n_discontinuities_list[0]; i++)
+	{
+		discontinuities[count] = (i + 1) * layers[0] / n_discontinuities_list[0];
+		r = (i + 0.5) * layers[0] / n_discontinuities_list[0];
+		rhoYes[count] = PREM_Full_Ye(r) * PREM_Full_rho(r);
+		count++;
+	}
+	for (int j = 1; j < 10; j++)
+	{ 
+		int layer_discontinuity = n_discontinuities_list[j];
+
+		for (int i = 0; i < layer_discontinuity; i++)
+	{
+			discontinuities[count] = layers[j-1] + (i + 1) * (layers[j] - layers[j-1]) / layer_discontinuity;
+			r = layers[j-1] + (i + 0.5) * (layers[j] - layers[j-1]) / layer_discontinuity;
+			rhoYes[count] = PREM_Full_Ye(r) * PREM_Full_rho(r);
+			count++;
+	} // i, layer_discontinuity, r
+	}
+	constant_shells = true; 
+}
+
+double PREM_EQW_DiscontinuityLayer::rhoYe(double r)
+{ 
+	assert(r >= 0);
+	
+	if (r > layers[9]) {	
+		return 0;
+	} 
+	for (int i = 8; i > -1; --i)
+	{
+		if (r > layers[i]) {
+			additional_layers = 0; 
+
+			for (int j = 0; j < i+1; j++)
+				{
+					additional_layers += n_discontinuities_list[j];
+				}
+			return rhoYes[(int)floor((r - layers[i]) / (layers[i+1] - layers[i]) * n_discontinuities_list[i+1]) + additional_layers];
+		}
+	}
+	return rhoYes[(int)floor(r / layers[0] * n_discontinuities_list[0])];
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////
 PREM_NDiscontinuityLayer::PREM_NDiscontinuityLayer(int n_inner_core_discontinuities_, int n_outer_core_discontinuities_, int n_inner_mantle_discontinuities_, int n_outer_mantle_discontinuities_)
 {
